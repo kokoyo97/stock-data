@@ -1,0 +1,26 @@
+name: Update quotes
+
+on:
+  schedule:
+    # 台灣時間 16:30、19:00、22:00（週一到週五），官方資料公布時間不固定，所以多抓幾次
+    - cron: '30 8 * * 1-5'
+    - cron: '0 11 * * 1-5'
+    - cron: '0 14 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch quotes
+        run: python3 fetch.py
+      - name: Commit data
+        run: |
+          git config user.name "quotes-bot"
+          git config user.email "quotes-bot@users.noreply.github.com"
+          git add data/quotes.json
+          git diff --staged --quiet || (git commit -m "update quotes" && git push)
